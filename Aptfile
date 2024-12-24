@@ -8,4 +8,10 @@ libxdamage1
 libxfixes3
 libxrandr2
 libgbm1
-libasound2
+libatk1.0-0
+libatk-bridge2.0-0
+libxss1
+libasound2-data
+libasound2-dev
+liboss4-salsa-asound2
+libasound2t64
