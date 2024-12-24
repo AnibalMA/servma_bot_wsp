@@ -15,3 +15,7 @@ libasound2-data
 libasound2-dev
 liboss4-salsa-asound2
 libasound2t64
+oss-compat
+libpulse0
+libpulse-dev
+libasound2-plugins
