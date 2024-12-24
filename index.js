@@ -4,8 +4,7 @@ const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
 const { ImapFlow } = require("imapflow");
 const simpleParser = require("mailparser").simpleParser;
-const puppeteer = require("puppeteer-extra");
-const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const puppeteer = require("puppeteer-core");
 const cheerio = require("cheerio");
 
 class NetflixWspBot {
@@ -221,104 +220,47 @@ class NetflixWspBot {
   }
   async setupBrowser() {
     try {
-      puppeteer.use(StealthPlugin());
-      // Modificar la ruta del userDataDir para Heroku
       const userDataDir = process.env.NODE_ENV === 'production' 
           ? '/tmp/puppeteer_data' 
           : 'E:\.pupeeter_data';
-  
-      // Si ya existe un navegador, cerrarlo primero
+
       if (this.browser) {
-          try {
-              await this.browser.close();
-          } catch (e) {
-              console.log('Error al cerrar navegador existente:', e);
-          }
+        try {
+          await this.browser.close();
+        } catch (e) {
+          console.log('Error al cerrar navegador existente:', e);
+        }
       }
-  
-      // Configuración mejorada del navegador
+
       this.browser = await puppeteer.launch({
-          headless: "new",
-          args: [
-              "--no-sandbox",
-              "--disable-setuid-sandbox",
-              "--disable-dev-shm-usage",
-              "--disable-gpu",
-              "--disable-web-security",
-              "--disable-features=IsolateOrigins",
-              "--disable-site-isolation-trials",
-              "--no-experiments",
-              "--ignore-certificate-errors",
-              "--ignore-certificate-errors-spki-list",
-              "--disable-accelerated-2d-canvas",
-              "--disable-infobars",
-              "--disable-audio-output",
-              "--no-first-run",
-              "--no-zygote",
-              "--single-process",
-              "--disable-extensions",
-              "--disable-default-apps",
-              "--disable-sync",
-              "--disable-background-networking",
-              "--window-size=1920,1080",
-              "--remote-debugging-port=9222",
-              "--disable-features=AudioServiceOutOfProcess",
-              `--user-data-dir=${userDataDir}`
-          ],
-          ignoreHTTPSErrors: true,
-          userDataDir: userDataDir,
-          timeout: 60000,
-          executablePath: process.env.CHROME_PATH || null,
-          env: {
-              ...process.env,
-              DISPLAY: undefined,
-              XAUTHORITY: undefined
-          },
-          // Agregar estas opciones adicionales
-          defaultViewport: {
-              width: 1920,
-              height: 1080
-          },
-          protocolTimeout: 30000
+        headless: "new",
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+          "--no-first-run",
+          "--no-zygote",
+          "--single-process",
+          "--disable-extensions",
+          "--disable-default-apps",
+          "--disable-sync",
+          "--window-size=1920,1080",
+        ],
+        ignoreHTTPSErrors: true,
+        executablePath: process.env.CHROME_PATH || null,
+        userDataDir: userDataDir,
+        defaultViewport: {
+          width: 1920,
+          height: 1080
+        }
       });
-  
-      // Configuración adicional para manejo de memoria
-      const pages = await this.browser.pages();
-      await Promise.all(pages.map(page => {
-          return page.setDefaultNavigationTimeout(60000);
-      }));
-  
-      // Manejadores de eventos para el navegador
-      this.browser.on('disconnected', async () => {
-          console.log('Navegador desconectado. Intentando reconectar...');
-          await this.reconnectBrowser();
-      });
-  
-      this.browser.on('targetcreated', async (target) => {
-          if (target.type() === 'page') {
-              const page = await target.page();
-              await this.setupPageErrorHandlers(page);
-          }
-      });
-  
-      // Agregar manejo de errores de proceso
-      process.on('unhandledRejection', async (reason, promise) => {
-          console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-          if (this.browser) {
-              try {
-                  await this.browser.close();
-              } catch (e) {
-                  console.error('Error al cerrar el navegador:', e);
-              }
-          }
-      });
-  
+
       return this.browser;
-  } catch (error) {
+    } catch (error) {
       console.error('Error al iniciar navegador:', error);
-      await this.handleBrowserError(error);
-      throw error; // Re-lanzar el error para manejo superior
-  }
+      throw error;
+    }
   }
 
   async reconnectBrowser() {

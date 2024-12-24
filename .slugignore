@@ -12,3 +12,14 @@ doc
 .idea
 *.md
 .gitignore
+*.psd
+*.pdf
+/test
+/spec
+/doc
+/tmp
+.git
+/node_modules
+*.md
+.env
+.DS_Store
